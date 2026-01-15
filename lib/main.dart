@@ -1,51 +1,23 @@
-import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:device_preview/device_preview.dart';
 import 'package:get/get.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 
-import 'package:online_cource_app/auth_gate.dart';
-import 'package:online_cource_app/controllers/auth_controller.dart';
-import 'package:online_cource_app/firebase_options.dart';
-import 'package:online_cource_app/theme/app_theme.dart';
+import 'Home/home_page.dart';
+import 'Cases/all_cases.dart';
+import 'Solve_Case/solve_case_home.dart';
+import 'About/profile_screen.dart';
+import 'theme/app_theme.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Set preferred orientations
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
-
-  // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+  runApp(
+    DevicePreview(
+      enabled: kIsWeb && !kReleaseMode,
+      builder: (context) => const MyApp(),
+    ),
   );
-
-  // Register controllers
-  Get.lazyPut(() => AuthController(), fenix: true);
-
-  // Configure EasyLoading
-  configureEasyLoading();
-
-  runApp(const MyApp());
-}
-
-void configureEasyLoading() {
-  EasyLoading.instance
-    ..displayDuration = const Duration(milliseconds: 2000)
-    ..indicatorType = EasyLoadingIndicatorType.fadingCircle
-    ..loadingStyle = EasyLoadingStyle.custom
-    ..indicatorSize = 45.0
-    ..radius = 16.0
-    ..progressColor = AppTheme.primaryColor
-    ..backgroundColor = Colors.white
-    ..indicatorColor = AppTheme.primaryColor
-    ..textColor = AppTheme.textColor
-    ..maskColor = Colors.black.withOpacity(0.5)
-    ..userInteractions = false
-    ..dismissOnTap = false;
 }
 
 class MyApp extends StatelessWidget {
@@ -54,13 +26,64 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'E-Learning App',
+      title: 'Crime Scene Learning Hub',
       debugShowCheckedModeBanner: false,
+      useInheritedMediaQuery: kIsWeb,
+      locale: kIsWeb ? DevicePreview.locale(context) : null,
+      builder: kIsWeb ? DevicePreview.appBuilder : null,
       theme: AppTheme.lightTheme(),
-      home: const AuthGate(),
-      builder: EasyLoading.init(),
-      defaultTransition: Transition.fadeIn,
-      transitionDuration: const Duration(milliseconds: 200),
+      home: const MainNavigationScreen(),
     );
   }
 }
+
+class MainNavigationScreen extends StatefulWidget {
+  const MainNavigationScreen({Key? key}) : super(key: key);
+
+  @override
+  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
+}
+
+class _MainNavigationScreenState extends State<MainNavigationScreen> {
+  int _currentIndex = 0;
+
+  final List<Widget> _pages = const [
+    HomePage(),
+    AllCasesPage(),
+    SolveCaseHome(),
+    ProfileScreen(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Crime Scene Learning Hub'),
+      ),
+      body: _pages[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) => setState(() => _currentIndex = index),
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_rounded),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.school_rounded),
+            label: 'Cases',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.assignment_rounded),
+            label: 'Exams',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_rounded),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+}
+

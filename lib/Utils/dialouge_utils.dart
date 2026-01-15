@@ -1,50 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:quickalert/quickalert.dart';
 
-void showConfirmDialouge(
-    BuildContext context, String title, void Function()? onConfirm) {
-  QuickAlert.show(
-      context: context,
-      type: QuickAlertType.confirm,
-      text: title,
-      confirmBtnText: 'Yes',
-      cancelBtnText: 'No',
-      confirmBtnColor: Colors.green,
-      onConfirmBtnTap: onConfirm);
-}
+Future<bool?> showConfirmDialogue(BuildContext context, String title) async {
+  bool? result;
 
-void showLoadingDialouge(BuildContext context, String title) {
-  QuickAlert.show(
+  await QuickAlert.show(
     context: context,
-    type: QuickAlertType.loading,
-    title: 'Loading',
+    type: QuickAlertType.confirm,
+    title: 'Confirm',
     text: title,
+    confirmBtnText: 'Start',
+    cancelBtnText: 'Cancel',
+    confirmBtnColor: const Color.fromARGB(255, 216, 79, 37),
+    onConfirmBtnTap: () {
+      result = true;
+      Navigator.pop(context);
+    },
+    onCancelBtnTap: () {
+      result = false;
+      Navigator.pop(context);
+    },
   );
+
+  return result;
 }
 
-void showSuccessDialouge(
-    BuildContext context, String title, void Function()? onConfirm) {
-  QuickAlert.show(
-      context: context,
-      type: QuickAlertType.success,
-      text: title,
-      onConfirmBtnTap: onConfirm);
-}
 
-void showErrorDialouge(BuildContext context, String title,
-    [String heading = 'Oops...']) {
-  QuickAlert.show(
-    context: context,
-    type: QuickAlertType.error,
-    title: heading,
-    text: title,
-  );
-}
-
-void showInfoDialouge(BuildContext context, String title) {
-  QuickAlert.show(
-    context: context,
-    type: QuickAlertType.info,
-    text: title,
-  );
-}

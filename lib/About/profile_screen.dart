@@ -1,200 +1,128 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:online_cource_app/controllers/auth_controller.dart';
-import 'package:online_cource_app/Login/login_page.dart';
-import 'package:online_cource_app/Utils/toast_messages.dart';
-import 'package:online_cource_app/theme/app_theme.dart';
+import 'about_screen.dart'; 
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final authController = Get.find<AuthController>();
-    final user = authController.currentUser;
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Profile'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_rounded),
-            onPressed: () {
-              // Navigate to settings screen
-            },
-          ),
-        ],
+        title: const Text('Detective Profile'),
+        centerTitle: true,
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          // Refresh user data
-          await authController.fetchUserData();
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Profile header
-              Center(
-                child: Column(
-                  children: [
-                    // Profile image
-                    CircleAvatar(
-                      radius: 60,
-                      backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
-                      child: user?.photoURL != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(60),
-                              child: Image.network(
-                                user!.photoURL!,
-                                width: 120,
-                                height: 120,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    _buildInitialsAvatar(user),
-                              ),
-                            )
-                          : _buildInitialsAvatar(user),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // User name
-                    Text(
-                      user?.displayName ?? 'E-Learning User',
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-
-                    // Email
-                    Text(
-                      user?.email ?? '',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: AppTheme.secondaryTextColor,
-                          ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Edit profile button
-                    OutlinedButton.icon(
-                      onPressed: () {
-                        // Navigate to edit profile screen
-                      },
-                      icon: const Icon(Icons.edit_rounded),
-                      label: const Text('Edit Profile'),
-                    ),
-                  ],
-                ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Avatar
+            const CircleAvatar(
+              radius: 55,
+              backgroundColor: Colors.deepPurple,
+              child: Icon(
+                Icons.person,
+                size: 60,
+                color: Colors.white,
               ),
+            ),
 
-              const SizedBox(height: 32),
+            const SizedBox(height: 16),
 
-              // Learning stats
-              const Text(
-                'Learning Statistics',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+            // Name
+            const Text(
+              'Guest Detective',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 16),
+            ),
 
-              _buildStatsCards(),
+            const SizedBox(height: 6),
 
-              const SizedBox(height: 32),
+            const Text(
+              'Solving concepts one case at a time 🕵️‍♀️',
+              style: TextStyle(color: Colors.grey),
+            ),
 
-              // Account options
-              const Text(
-                'Account',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
+            const SizedBox(height: 32),
 
-              _buildAccountOptions(context, authController),
+            // Stats
+            Row(
+              children: const [
+                _StatCard(title: 'Cases Solved', value: '12'),
+                SizedBox(width: 12),
+                _StatCard(title: 'Topics Investigated', value: '8'),
+                SizedBox(width: 12),
+                _StatCard(title: 'Accuracy', value: '92%'),
+              ],
+            ),
 
-              const SizedBox(height: 16),
-            ],
-          ),
+            const SizedBox(height: 32),
+
+            // Options
+            const _ProfileOption(
+              icon: Icons.book,
+              title: 'My Investigations',
+            ),
+            const _ProfileOption(
+              icon: Icons.analytics,
+              title: 'Learning Progress',
+            ),
+            const _ProfileOption(
+              icon: Icons.settings,
+              title: 'Settings',
+            ),
+
+            _ProfileOption(
+              icon: Icons.info_outline,
+              title: 'About Crime Hub',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AboutPage(),
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildInitialsAvatar(User? user) {
-    String initials = 'U';
-    if (user?.displayName != null && user!.displayName!.isNotEmpty) {
-      final nameParts = user.displayName!.trim().split(' ');
-      if (nameParts.length > 1) {
-        initials = '${nameParts.first[0]}${nameParts.last[0]}';
-      } else {
-        initials = nameParts.first[0];
-      }
-      initials = initials.toUpperCase();
-    } else if (user?.email != null) {
-      initials = user!.email![0].toUpperCase();
-    }
+class _StatCard extends StatelessWidget {
+  final String title;
+  final String value;
 
-    return Center(
-      child: Text(
-        initials,
-        style: const TextStyle(
-          fontSize: 40,
-          fontWeight: FontWeight.bold,
-          color: AppTheme.primaryColor,
-        ),
-      ),
-    );
-  }
+  const _StatCard({
+    required this.title,
+    required this.value,
+  });
 
-  Widget _buildStatsCards() {
-    return Row(
-      children: [
-        _buildStatCard('Courses\nEnrolled', '5', Icons.school_rounded),
-        const SizedBox(width: 16),
-        _buildStatCard('Hours\nSpent', '24', Icons.access_time_rounded),
-        const SizedBox(width: 16),
-        _buildStatCard(
-            'Certificates\nEarned', '3', Icons.workspace_premium_rounded),
-      ],
-    );
-  }
-
-  Widget _buildStatCard(String title, String value, IconData icon) {
+  @override
+  Widget build(BuildContext context) {
     return Expanded(
       child: Card(
-        color: Colors.white,
-        elevation: 4,
+        elevation: 3,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(vertical: 16),
           child: Column(
             children: [
-              Icon(
-                icon,
-                size: 32,
-                color: AppTheme.primaryColor,
-              ),
-              const SizedBox(height: 8),
               Text(
                 value,
                 style: const TextStyle(
-                  fontSize: 24,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.primaryColor,
+                  color: Colors.deepPurple,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppTheme.secondaryTextColor,
-                ),
+                style: const TextStyle(fontSize: 12),
               ),
             ],
           ),
@@ -202,87 +130,29 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildAccountOptions(
-      BuildContext context, AuthController authController) {
+class _ProfileOption extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback? onTap;
+
+  const _ProfileOption({
+    required this.icon,
+    required this.title,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
-      color: Colors.white,
-      elevation: 4,
-      child: Column(
-        children: [
-          _buildOptionItem(
-            icon: Icons.verified_user_rounded,
-            title: 'Account Settings',
-            onTap: () {
-              // Navigate to account settings
-            },
-          ),
-          const Divider(),
-          _buildOptionItem(
-            icon: Icons.notifications_rounded,
-            title: 'Notifications',
-            onTap: () {
-              // Navigate to notifications settings
-            },
-          ),
-          const Divider(),
-          _buildOptionItem(
-            icon: Icons.lock_rounded,
-            title: 'Privacy & Security',
-            onTap: () {
-              // Navigate to privacy settings
-            },
-          ),
-          const Divider(),
-          _buildOptionItem(
-            icon: Icons.help_rounded,
-            title: 'Help & Support',
-            onTap: () {
-              // Navigate to help center
-            },
-          ),
-          const Divider(),
-          _buildOptionItem(
-            icon: Icons.exit_to_app_rounded,
-            title: 'Sign Out',
-            textColor: AppTheme.errorColor,
-            onTap: () async {
-              try {
-                await authController.signOutUsers();
-                showSuccessToast(context, 'Signed out successfully');
-                Get.offAll(() => const LoginPage());
-              } catch (e) {
-                showErrorToast(context, 'Error signing out. Please try again.');
-              }
-            },
-          ),
-        ],
+      elevation: 2,
+      child: ListTile(
+        leading: Icon(icon, color: Colors.deepPurple),
+        title: Text(title),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        onTap: onTap,
       ),
-    );
-  }
-
-  Widget _buildOptionItem({
-    required IconData icon,
-    required String title,
-    Color? textColor,
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: textColor ?? AppTheme.primaryColor,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: textColor,
-        ),
-      ),
-      trailing: const Icon(
-        Icons.arrow_forward_ios_rounded,
-        size: 16,
-      ),
-      onTap: onTap,
     );
   }
 }
